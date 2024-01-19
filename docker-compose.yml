@@ -1,0 +1,134 @@
+version: "3.7"
+
+services:
+  transaction_initiation_service:
+    build: ./TransactionInitiationService
+    ports:
+      - "8080:3199"
+    depends_on:
+      - postgres
+      - kafka1
+      - kafka2
+      - kafka3
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/mydb
+      - SSL_KEY_URL=https://bucket-cpe-peru.s3.amazonaws.com/CPE_SSL/SSL_COURSESDEV/origin.key
+      - SSL_CERT_URL=https://bucket-cpe-peru.s3.amazonaws.com/CPE_SSL/SSL_COURSESDEV/origin.crt
+  
+  fraud_validation_service:
+    build: ./FraudValidationService
+    ports:
+      - "3200:3200"
+    depends_on:
+      - transaction_initiation_service
+      - kafka1
+      - kafka2
+      - kafka3
+    environment:
+      - NODE_ENV=dev
+      - BASE_PATH=
+      - PORT=3200
+      - APM_ENABLED=0
+      - LOG_LEVEL=info
+      - COUNTRY=pe
+      - KAFKA_BROKER=kafka1:19092,kafka2:19093,kafka3:19094
+      - KAFKA_TOPIC_CREATED=transactions_created
+      - KAFKA_TOPIC_UPDATE=transaction_status_updated
+      - KAFKA_USE_TRANSACTIONS=true
+      - KAFKA_IS_IDEMPOTENT=true
+      - SSL_KEY_URL=https://bucket-cpe-peru.s3.amazonaws.com/CPE_SSL/SSL_COURSESDEV/origin.key
+      - SSL_CERT_URL=https://bucket-cpe-peru.s3.amazonaws.com/CPE_SSL/SSL_COURSESDEV/origin.crt
+  transaction_status_update_service:
+    build: ./TransactionStatusUpdateService
+    ports:
+      - "3202:3202"
+    depends_on:
+      - kafka1
+      - kafka2
+      - kafka3
+    environment:
+      - NODE_ENV=dev
+      - BASE_PATH=
+      - PORT=3202
+      - APM_ENABLED=0
+      - LOG_LEVEL=info
+      - COUNTRY=pe
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/mydb
+      - KAFKA_BROKER=kafka1:19092,kafka2:19093,kafka3:19094
+      - KAFKA_TOPIC_CREATED=transactions_created
+      - KAFKA_TOPIC_UPDATE=transaction_status_updated
+      - KAFKA_USE_TRANSACTIONS=true
+      - KAFKA_IS_IDEMPOTENT=true
+      - SSL_KEY_URL=https://bucket-cpe-peru.s3.amazonaws.com/CPE_SSL/SSL_COURSESDEV/origin.key
+      - SSL_CERT_URL=https://bucket-cpe-peru.s3.amazonaws.com/CPE_SSL/SSL_COURSESDEV/origin.crt
+  postgres:
+    image: postgres:14
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=mydb
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  
+  zookeeper:
+    image: confluentinc/cp-zookeeper:5.5.3
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+
+  kafka1:
+    image: confluentinc/cp-kafka:5.5.3
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka1:19092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    ports:
+      - "9092:9092"
+
+  kafka2:
+    image: confluentinc/cp-kafka:5.5.3
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 2
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka2:19093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+    ports:
+      - "9093:19093"
+
+  kafka3:
+    image: confluentinc/cp-kafka:5.5.3
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 3
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka3:19094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+    ports:
+      - "9094:19094"
+
+  kafka-init:
+    image: confluentinc/cp-kafka:5.5.3
+    depends_on:
+      - kafka1
+      - kafka2
+      - kafka3
+    command: "bash -c 'echo Esperando a Kafka... && \
+              while ! nc -z kafka1 19092; do sleep 1; done && \
+              echo Creando topic: transactions_created && \
+              kafka-topics --create --topic transactions_created --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --replication-factor 3 --partitions 3 && \
+              echo Creando topic: transaction_status_updated && \
+              kafka-topics --create --topic transaction_status_updated --bootstrap-server kafka1:19092,kafka2:19093,kafka3:19094 --replication-factor 3 --partitions 3'"

@@ -1,0 +1,13 @@
+.dockerignore
+.git
+.gitignore
+node_modules
+npm-debug.log
+Dockerfile
+README.md
+sonar-project.properties
+bitbucket-pipelines.yml
+/.dist
+/.coverage
+/.vscode
+/.husky

@@ -1,0 +1,31 @@
+import crypto from 'crypto';
+import forge from 'node-forge';
+import { config }  from '../../../../../app/config';
+
+const { pki } = forge;
+
+const makeSignature = (signature: string) => Buffer.from(signature, 'base64').toString('ascii');
+
+export const decrypt = (data: string): string => {
+  const privateSignature = makeSignature(config.get('cvvValidator.secretPassword'));
+  const privateKey = pki.privateKeyFromPem(privateSignature);
+  return privateKey.decrypt(Buffer.from(data, 'base64').toString());
+};
+
+export const encrypt2 = data => {
+  const publicKey = forge.pki.publicKeyFromPem(makeSignature(config.get('cvvValidator.validatorKey')));
+  const encryptedData = publicKey.encrypt(Buffer.from(data));
+
+  return Buffer.from(encryptedData).toString('base64');
+};
+
+export const encrypt = (data: unknown): string =>
+  crypto
+    .publicEncrypt(
+      {
+        key: makeSignature(config.get('cvvValidator.validatorKey')),
+        padding: crypto.constants.RSA_PKCS1_OAEP_PADDING
+      },
+      Buffer.from(JSON.stringify(data))
+    )
+    .toString('base64');

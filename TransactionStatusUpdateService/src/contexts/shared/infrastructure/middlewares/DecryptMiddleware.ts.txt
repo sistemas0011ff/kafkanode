@@ -1,0 +1,24 @@
+import { Request, Response, NextFunction } from 'express';
+import status from 'http-status';
+import { decrypt } from '../config/crypto';
+
+const decryptValues = (object) => {
+  Object.keys(object).forEach((key) => {
+    object[key] = decrypt(object[key]);
+  });
+  return object;
+};
+
+export class DecryptMiddleware {
+  run = (req: Request, res: Response, next: NextFunction): void => {
+    try {
+      req.body = decryptValues(req.body);
+      next();
+    } catch (error) {
+      res.status(status.BAD_REQUEST).send({
+        success: false,
+        errors: 'error in message',
+      });
+    }
+  };
+}

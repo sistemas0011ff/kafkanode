@@ -1,0 +1,178 @@
+.
+|____Dockerfile
+|____entrypoint.sh
+|____nodemon.json
+|____output.txt
+|____package-lock.json
+|____package.json
+|____prisma
+| |____schema.prisma
+|____README.md
+|____src
+| |____app
+| | |____ajv
+| | | |____Validate.ts
+| | |____apm
+| | | |____index.ts
+| | |____App.ts
+| | |____config
+| | | |____index.ts
+| | |____controllers
+| | | |____health
+| | | | |____HealthGetController.ts
+| | |____logger
+| | | |____BaseLogger.ts
+| | | |____globalLogger.ts
+| | | |____index.ts
+| | | |____Logger.ts
+| | | |____LoggerPino.ts
+| | |____middlewares
+| | | |____errorHandler.ts
+| | | |____ErrorHandlerMiddleware.ts
+| | | |____RequestLoggerMiddleware.ts
+| | |____resolvers
+| | | |____dto
+| | | | |____response
+| | | | | |____TransactionResDto.ts
+| | | | |____TransactionInputDto.ts
+| | | | |____TransactionResponseDTO.ts
+| | | | |____TransactionServiceDto.ts
+| | | |____InitiateTransactionResolvers.ts
+| | | |____services
+| | | | |____convertToServiceInput.ts
+| | |____routes
+| | | |____health
+| | | | |____health.route.ts
+| | | |____index.ts
+| | | |____schemas
+| | |____server.ts
+| | |____start.ts
+| | |____tokens
+| |____contexts
+| | |____shared
+| | | |____application
+| | | | |____interfaces
+| | | | | |____graphql
+| | | | | | |____Confirmation.ts
+| | | | | |____IConfirmation.ts
+| | | | | |____index.ts
+| | | | |____response
+| | | | | |____GQConfirmation.ts
+| | | |____cqrs
+| | | | |____ICommand.ts
+| | | | |____ICommandHandler.ts
+| | | | |____ICommandResult.ts
+| | | | |____IQuery.ts
+| | | | |____IQueryHandler.ts
+| | | |____domain
+| | | | |____BaseApiClient.ts
+| | | | |____entities
+| | | | |____events
+| | | | | |____DomainEvent.ts
+| | | | | |____DomainEventSubscriber.ts
+| | | | | |____EventBus.ts
+| | | | | |____index.ts
+| | | | |____valueobject
+| | | | | |____InvalidArgumentError.ts
+| | | | | |____Uuid.ts
+| | | |____infrastructure
+| | | | |____api
+| | | | | |____BaseApiResponse.ts
+| | | | | |____clients
+| | | | |____axios
+| | | | | |____AxiosApiClient.ts
+| | | | | |____index.ts
+| | | | |____config
+| | | | | |____axios
+| | | | | | |____index.ts
+| | | | | |____crypto
+| | | | |____database
+| | | | | |____dataTypes.ts
+| | | | |____eventBus
+| | | | | |____DomainEventMapping.ts
+| | | | | |____EventEmitterBus.ts
+| | | | | |____index.ts
+| | | | | |____inmemory
+| | | | | | |____InMemoryAsyncEventBus.ts
+| | | | |____exceptions
+| | | | | |____BadRequestError.ts
+| | | | | |____BaseException.ts
+| | | | | |____CustomBadRequestException.ts
+| | | | | |____CustomException.ts
+| | | | | |____CustomNotFoundException.ts
+| | | | | |____NotFoundError.ts
+| | | | | |____ServiceUnavailable.ts
+| | | | |____interfaces
+| | | | | |____IBaseController.ts
+| | | | | |____IBaseException.ts
+| | | | | |____IKafkaService.ts
+| | | | |____kafka
+| | | | | |____KafkaService.ts
+| | | | |____middlewares
+| | | | | |____index.ts
+| | | | | |____JWTMiddleware.ts
+| | | | | |____RequestLoggerMiddleware.ts
+| | | | | |____ValidateMiddleware.ts
+| | | | |____orm
+| | | | | |____prisma
+| | | | | | |____PrismaService.ts
+| | |____transaction
+| | | |____application
+| | | | |____commands
+| | | | | |____CreateTransactionCommand.ts
+| | | | | |____CreateTransactionCommandHandler.ts
+| | | | |____dto
+| | | | | |____CreateTransactionDTO.ts
+| | | | | |____GetTransactioDTO.ts
+| | | | | |____response
+| | | | | | |____AddressAppDto.ts
+| | | | | | |____DriverAppDto.ts
+| | | | | | |____PartyAppDto.ts
+| | | | | | |____ShipmentProductAppDto.ts
+| | | | | | |____TransactioAppDto.ts
+| | | | | | |____VehicleAppDto.ts
+| | | | | |____TransactionServiceInputDto.ts
+| | | | |____event-handlers
+| | | | | |____TransactionCreatedSubscriber.ts
+| | | | |____interfaces
+| | | | | |____ICreateTransactionUseCase.ts
+| | | | | |____IGetAllTransactionsUseCase.ts
+| | | | | |____IGetTransactionByIdUseCase.ts
+| | | | | |____IInitiateTransactionService.ts
+| | | | |____queries
+| | | | | |____GetAllTransactionsQuery.ts
+| | | | | |____GetAllTransactionsQueryHandler.ts
+| | | | | |____GetTransactionByIdQuery.ts
+| | | | | |____GetTransactionByIdQueryHandler.ts
+| | | | |____services
+| | | | | |____convertDtoApplicationResponse.ts
+| | | | | |____convertToServiceApplicationInput.ts
+| | | | | |____TransactionService.ts
+| | | | |____usecases
+| | | | | |____CreateTransactionUseCase.ts
+| | | | | |____GetAllTransactionsUseCase.ts
+| | | | | |____GetTransactionByIdUseCase.ts
+| | | |____domain
+| | | | |____aggreagates
+| | | | | |____Transaction.ts
+| | | | |____dto
+| | | | | |____CreateTransactionInfraestructureDto.ts
+| | | | | |____GetTransactionInfraestructureDto.ts
+| | | | | |____TransactionCreatedEventDto.ts
+| | | | |____entities
+| | | | |____events
+| | | | | |____TransactionCreatedDomainEvent.ts
+| | | | |____interfaces
+| | | | | |____DomainEventClass.ts
+| | | | | |____ITransactionRepository.ts
+| | | | |____valueobjects
+| | | |____infraestructure
+| | | | |____dto
+| | | | | |____response
+| | | | |____interfaces
+| | | | |____mappers
+| | | | |____repositories
+| | | | | |____TransactionRepository.ts
+| | | | |____services
+|____tsconfig.json
+|____tsconfig.prod.json
